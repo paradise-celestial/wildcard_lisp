@@ -1,0 +1,9 @@
+name: wildcard_lisp
+version: 0.1.0
+
+authors:
+  - microlith57 <microlith57@gmail.com>
+
+crystal: 0.28.0
+
+license: MIT
