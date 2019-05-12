@@ -9,7 +9,11 @@
 struct Proc
   # Returns a tuple of the argument types of this Proc class.
   def self.argument_types
-    {{ T }}
+    {% if T.size > 0 %}
+      {{ T }}
+    {% else %}
+      nil
+    {% end %}
   end
 
   # Returns the return type of this Proc class.
