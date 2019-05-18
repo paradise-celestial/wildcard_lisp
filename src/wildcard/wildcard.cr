@@ -48,7 +48,12 @@ class WildcardLISP::Wildcard
       end
     end
 
-    output = @proc.call inputs, context
+    new_context = context.dup
+
+    output = @proc.call inputs, new_context
+
+    new_context.propogate_up context
+
     output || Token.new("nil")
   end
 

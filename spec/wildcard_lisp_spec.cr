@@ -81,6 +81,12 @@ describe WildcardLISP do
     they "can be created locally in `let` blocks" do
       %(let foo 5 (+ foo 1)).should execute_to 6
     end
+
+    pending "cannot be accessed outside their `let` blocks" do
+      expect_raises(Exception, "no such wildcard foo") do
+        WildcardLISP.exec %(+ (let foo 5 (+ foo 1)) foo)
+      end
+    end
   end
 
   describe "logical" do
@@ -127,6 +133,12 @@ describe WildcardLISP do
       %(not "T").should execute_to nil
       %(not (not nil)).should execute_to nil
       %(not nil).should execute_to "T"
+    end
+  end
+
+  describe "lambdas" do
+    pending "can be created" do
+      %(let add_one (lambda (a) (+ a 1)) (add_one 4)).should execute_to 5
     end
   end
 end

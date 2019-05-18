@@ -40,6 +40,10 @@ class WildcardLISP::Token
     @type = "string"
   end
 
+  def initialize(@contents : Lambda)
+    @type = "lambda"
+  end
+
   def to_s(io)
     case @type
     when "nil"
@@ -61,7 +65,10 @@ class WildcardLISP::Token
   def exec(context)
     return self if @type != "wildcard"
 
-    context.exec @contents.as(String), [] of Tree(WildcardLISP::Token) | WildcardLISP::Token
+    new_context = context.dup
+    result = context.exec @contents.as(String), [] of Tree(WildcardLISP::Token) | WildcardLISP::Token
+    new_context.propogate_up context
+    result
   end
 
   def is_type?(type_string)

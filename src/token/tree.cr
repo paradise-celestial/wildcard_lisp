@@ -7,21 +7,26 @@ class WildcardLISP::TokenTree < Tree(WildcardLISP::Token)
     return Token.new(nil) if size == 0
     first_node = first
 
+    new_context = context.dup
+
     if size == 1
       if first_node.is_a? Tree
-        return first_node.as(TokenTree).exec(context)
+        return first_node.as(TokenTree).exec(new_context)
       else
-        return first_node.as(Token).exec(context)
+        return first_node.as(Token).exec(new_context)
       end
     end
 
     if first_node.is_a? Tree
-      first_node = first_node.as(TokenTree).exec(context)
+      first_node = first_node.as(TokenTree).exec(new_context)
     end
 
     raise "expected wildcard, got something else" unless first_node.type.in? ["wildcard", "lambda"]
 
-    context.exec(first_node.contents.as(String), self[1..-1])
+    result = new_context.exec(first_node.contents.as(String), self[1..-1])
+
+    new_context.propogate_up context
+    result
   end
 
   def self.from_string(str : String) : TokenTree

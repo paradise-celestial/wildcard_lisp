@@ -131,3 +131,22 @@ wildcard_no_exec "let string|wildcard any any", "set a local variable" do |name,
 
   block
 end
+
+wildcard_no_exec "lambda any any", "define a lambda function with given arguments and body" do |args, body|
+  lambda_args = [] of String
+
+  if args.is_a? WildcardLISP::TokenTree
+    args.each do |arg|
+      raise "args must be a list of wildcards or a wildcard" if arg.is_a? Tree
+      raise "args must be a list of wildcards or a wildcard" unless arg.type == "wildcard"
+      lambda_args << arg.contents.as(String)
+    end
+  else
+    raise "args must be a list of wildcards or a wildcard" unless args.type == "wildcard"
+    lambda_args << args.contents.as(String)
+  end
+
+  raise "body must be a tree" unless body.is_a? Tree
+
+  WildcardLISP::Token.new WildcardLISP::Lambda.new(lambda_args, body.as(WildcardLISP::TokenTree))
+end

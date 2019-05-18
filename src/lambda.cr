@@ -1,15 +1,28 @@
+require "./token"
+
 # TODO
 class WildcardLISP::Lambda
-  def args
-    [] of String
-  end
+  property args : Array(String)
+  property body : TokenTree
 
-  # REVIEW
-  def exec_args?
-    true
+  def initialize(@args, @body)
   end
 
   def exec(args, context)
-    Token.new("nil")
+    raise "wrong number of arguments for lambda" unless @args.size == args.size
+
+    new_context = context.dup
+
+    @args.each_with_index do |name, index|
+      contents = args[index]
+      contents = contents.as(TokenTree).exec context if contents.is_a? Tree
+
+      new_context << Variable.new(name, contents, local: true)
+    end
+
+    result = @body.exec new_context
+    new_context.propogate_up context
+
+    result
   end
 end
