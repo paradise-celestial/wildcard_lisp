@@ -4,6 +4,15 @@ version: 0.1.0
 authors:
   - microlith57 <microlith57@gmail.com>
 
+dependencies:
+  crystal_on_steroids:
+    github: werner/crystal_on_steroids
+
+development_dependencies:
+  ameba:
+    github: veelenga/ameba
+    version: ~> 0.9.1
+
 crystal: 0.28.0
 
 license: MIT

@@ -1,14 +1,27 @@
 require "../tree"
 require "./token"
+require "../context"
 
 class WildcardLISP::TokenTree < Tree(WildcardLISP::Token)
-  def exec
+  def exec(context : Context) : Token
+    return Token.new(nil) if size == 0
     first_node = first
 
-    raise "expected wildcard, got parentheses" if first_node.is_a? Tree
-    raise "expected wildcard, got something else" if first_node.type != "Card"
+    if size == 1
+      if first_node.is_a? Tree
+        return first_node.as(TokenTree).exec(context)
+      else
+        return first_node.as(Token).exec(context)
+      end
+    end
 
-    Wildcard.exec(first_node.contents.as(String), self[1..-1])
+    if first_node.is_a? Tree
+      first_node = first_node.as(TokenTree).exec(context)
+    end
+
+    raise "expected wildcard, got something else" unless first_node.type.in? ["wildcard", "lambda"]
+
+    context.exec(first_node.contents.as(String), self[1..-1])
   end
 
   def self.from_string(str : String) : TokenTree
@@ -48,40 +61,44 @@ class WildcardLISP::TokenTree < Tree(WildcardLISP::Token)
     end
 
     def self.separate_strings(input)
-      output = [] of String | Token
+      output = [""] of String | Token
       current_quote_type = nil
 
       input.chars.each_with_index do |char, i|
-        # Is the previous character a "\"?
-        is_escaped = i >= 1 && input[i - 1] == "\\"
+        escaped = i > 0 && input[i - 1] == '\\'
 
-        # Start / end `Token::String`s
-        unless is_escaped
-          if current_quote_type.nil? && ["\"", "'"].includes?(char)
-            current_quote_type = char
-            output.push Token.new
-            next
-          elsif current_quote_type == char
+        case char
+        when '"'
+          if current_quote_type.nil?
+            current_quote_type = '"'
+            output << Token.new("''")
+          else
             current_quote_type = nil
-            next
           end
-        end
-
-        # Add current char to output
-        if output.empty?
-          output.push char.to_s
-        elsif output.last.is_a?(Token) && current_quote_type.nil?
-          output.push char.to_s
-        elsif (last = output.last).is_a?(Token) && last.type == "String"
-          last.contents = last.contents.as(String) + char
+        when '\''
+          if current_quote_type.nil?
+            current_quote_type = '\''
+            output << Token.new("''")
+          else
+            current_quote_type = nil
+          end
         else
-          output[-1] = output.last.as(String) + char
+          out_last = output.last
+          if out_last.is_a? Token && !current_quote_type.nil?
+            out_last.contents = out_last.contents.to_s + char
+          elsif out_last.is_a? String
+            output[-1] = out_last + char
+          else
+            output << char.to_s
+          end
         end
       end
 
       raise "unbalanced quotes" unless current_quote_type.nil?
 
-      output
+      output.reject do |o|
+        o.is_a? String && o.blank?
+      end
     end
 
     def self.split(input)
