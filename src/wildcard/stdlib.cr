@@ -50,14 +50,14 @@ end
 
 wildcard_no_exec "if any any any", "return `branch_true` if `cond` is non-nil, or `branch_false` of `cond` is nil" do |cond, branch_true, branch_false|
   cond = cond.exec(context) if cond.is_a? WildcardLISP::TokenTree
-  cond = cond.as(WildcardLISP::Token)
+  cond = cond.as(WildcardLISP::Token).exec context
 
   if cond.type == "nil"
     branch_false = branch_false.exec(context) if branch_false.is_a? WildcardLISP::TokenTree
-    branch_false.as(WildcardLISP::Token)
+    branch_false.as(WildcardLISP::Token).exec context
   else
     branch_true = branch_true.exec(context) if branch_true.is_a? WildcardLISP::TokenTree
-    branch_true.as(WildcardLISP::Token)
+    branch_true.as(WildcardLISP::Token).exec context
   end
 end
 
@@ -66,7 +66,7 @@ wildcard_no_exec "and any*", "return the first argument if none of them are nil,
 
   args.each do |arg|
     arg = arg.exec(context) if arg.is_a? WildcardLISP::TokenTree
-    arg = arg.as(WildcardLISP::Token)
+    arg = arg.as(WildcardLISP::Token).exec context
     if arg.type == "nil"
       result = nil
       break
@@ -83,7 +83,7 @@ wildcard_no_exec "or any*", "return the first non-nil argument, or nil if all ar
 
   args.each do |arg|
     arg = arg.exec(context) if arg.is_a? WildcardLISP::TokenTree
-    arg = arg.as(WildcardLISP::Token)
+    arg = arg.as(WildcardLISP::Token).exec context
     if arg.type != "nil"
       result = arg
       break
@@ -105,11 +105,11 @@ end
 
 wildcard_no_exec "set string|wildcard any", "set a global variable" do |name, value|
   name = name.exec(context) if name.is_a? WildcardLISP::TokenTree
-  name = name.as(WildcardLISP::Token)
+  name = name.as(WildcardLISP::Token).exec context
   name = name.contents.as(String)
 
   value = value.exec(context) if value.is_a? WildcardLISP::TokenTree
-  value = value.as(WildcardLISP::Token)
+  value = value.as(WildcardLISP::Token).exec context
 
   context << WildcardLISP::Variable.new(name, value)
   value
@@ -117,17 +117,17 @@ end
 
 wildcard_no_exec "let string|wildcard any any", "set a local variable" do |name, value, block|
   name = name.exec(context) if name.is_a? WildcardLISP::TokenTree
-  name = name.as(WildcardLISP::Token)
+  name = name.as(WildcardLISP::Token).exec context
   name = name.contents.as(String)
 
   value = value.exec(context) if value.is_a? WildcardLISP::TokenTree
-  value = value.as(WildcardLISP::Token)
+  value = value.as(WildcardLISP::Token).exec context
 
   ctx = context.dup
   ctx << WildcardLISP::Variable.new(name, value, local: true)
 
   block = block.exec(ctx) if block.is_a? WildcardLISP::TokenTree
-  block = block.as(WildcardLISP::Token)
+  block = block.as(WildcardLISP::Token).exec context
 
   block
 end
