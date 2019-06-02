@@ -137,7 +137,11 @@ describe WildcardLISP do
   end
 
   describe "lambdas" do
-    pending "can be created" do
+    they "can be created" do
+      WildcardLISP.exec %(lambda (a) (+ a 1))
+    end
+
+    pending "can be used" do
       %(let add_one (lambda (a) (+ a 1)) (add_one 4)).should execute_to 5
     end
   end
