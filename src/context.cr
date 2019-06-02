@@ -154,6 +154,44 @@ class WildcardLISP::Context
       result
     end
 
+    if possibilities.size > 1
+      args = args.map do |arg|
+        arg = arg.as(TokenTree) if arg.is_a? Tree
+        arg.exec self
+      end
+
+      possibilities = vars.select do |overload|
+        next false unless overload.type.in? ["lambda", "wildcard"]
+        overload = overload.contents.as(Lambda | Wildcard)
+
+        over_args = overload.args
+
+        result = true
+
+        over_args.each_with_index do |arg, index|
+          if arg.ends_with? '*'
+            args[index..-1].each do |a|
+              if a.is_a? Token
+                if !a.is_type? arg
+                  result = false
+                  break
+                end
+              end
+            end
+          else
+            a = args[index]
+            if a.is_a? Token
+              if !a.is_type? arg
+                result = false
+                break
+              end
+            end
+          end
+        end
+        result
+      end
+    end
+
     # puts possibilities
 
     raise "no such wildcard #{name} with args #{args}" if possibilities.size == 0

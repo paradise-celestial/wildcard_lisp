@@ -82,7 +82,7 @@ describe WildcardLISP do
       %(let foo 5 (+ foo 1)).should execute_to 6
     end
 
-    pending "cannot be accessed outside their `let` blocks" do
+    they "cannot be accessed outside their `let` blocks" do
       expect_raises(Exception, "no such wildcard foo") do
         WildcardLISP.exec %(+ (let foo 5 (+ foo 1)) foo)
       end
